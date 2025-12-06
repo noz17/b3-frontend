@@ -56,4 +56,4 @@ npm run start
 - Gunakan tombol "View Logs" untuk melihat riwayat terakhir ketika perangkat offline.
 
 ## Lisensi
-Internal project — gunakan sesuai izin pemilik repositori.
+Internal project — gunakan sesuai izin pemilik repositori @puremachine99 n @noz17
