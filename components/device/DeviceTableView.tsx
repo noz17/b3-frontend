@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import type { Device } from "@/types/device";
 import type { DeviceGroup } from "@/types/group";
 import { DeviceActionMenu } from "./DeviceActionMenu";
+import { cn } from "@/lib/utils";
 
 interface Props {
   groups: DeviceGroup[];
@@ -49,7 +50,7 @@ export const DeviceTableView = ({
 }: Props) => {
   return (
     <Card>
-      <CardHeader className="border-b">
+      <CardHeader className="border-b border-border">
         <CardTitle>Device Row View</CardTitle>
         <CardDescription>
           Tabel komprehensif untuk audit cepat antar group.
@@ -124,6 +125,22 @@ const GroupSection = ({
   groupToggleState: Record<string, boolean>;
   groupToggleLoading: Record<string, boolean>;
 }) => {
+  const renderCell = (
+    value: string | number | null | undefined,
+    className?: string
+  ) => {
+    const text = value == null ? "-" : String(value);
+    const truncated = text.length > 25 ? `${text.slice(0, 25)}…` : text;
+    return (
+      <span
+        title={text}
+        className={cn("block max-w-[220px] truncate", className)}
+      >
+        {truncated}
+      </span>
+    );
+  };
+
   const isAllGroup = group.id === "all";
   const fallbackChecked =
     group.devices.length > 0 &&
@@ -141,7 +158,7 @@ const GroupSection = ({
         <TableCell colSpan={5} className="pl-6 font-semibold">
           <div className="flex items-center justify-between">
             <div>
-              {group.name}
+              {renderCell(group.name, "font-semibold max-w-none")}
               <p className="text-xs font-normal text-muted-foreground">
                 {group.devices.length} device{group.devices.length === 1 ? "" : "s"}
               </p>
@@ -172,13 +189,15 @@ const GroupSection = ({
             <TableCell className="pl-6">
               <p className="flex items-center gap-2 font-medium">
                 <span>{isOnline ? "🟢" : "🔴"}</span>
-                {device.name}
+                {renderCell(device.name)}
               </p>
-              <p className="text-xs text-muted-foreground">{device.id}</p>
+              <p className="text-xs text-muted-foreground">
+                {renderCell(device.id, "max-w-[180px]")}
+              </p>
             </TableCell>
 
             {/* SERIAL */}
-            <TableCell>{device.serial}</TableCell>
+            <TableCell>{renderCell(device.serial)}</TableCell>
 
             {/* POWER STATUS */}
             <TableCell>
@@ -195,7 +214,7 @@ const GroupSection = ({
             </TableCell>
 
             {/* LOCATION */}
-            <TableCell>{device.location}</TableCell>
+            <TableCell>{renderCell(device.location)}</TableCell>
 
             {/* ACTIONS */}
             <TableCell className="pr-6 text-right">
@@ -219,7 +238,11 @@ const GroupSection = ({
                       <Badge variant="outline" className="text-[10px] uppercase">
                         {lastLog.type}
                       </Badge>
-                      <span className="truncate">{lastLog.message}</span>
+                      <span title={lastLog.message} className="truncate">
+                        {lastLog.message?.length > 25
+                          ? `${lastLog.message.slice(0, 25)}…`
+                          : lastLog.message}
+                      </span>
                     </div>
                   </div>
                 ) : null}

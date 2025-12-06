@@ -127,7 +127,7 @@ export default function Page() {
       const link = document.createElement("link");
       link.id = "leaflet-css";
       link.rel = "stylesheet";
-      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      link.href = "/vendor/leaflet/leaflet.css";
       document.head.appendChild(link);
     };
     ensureCss();
@@ -153,7 +153,7 @@ export default function Page() {
     }
 
     const script = document.createElement("script");
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.src = "/vendor/leaflet/leaflet.js";
     script.async = true;
     script.onload = () => initMap();
     script.onerror = () => {

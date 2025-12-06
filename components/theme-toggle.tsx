@@ -13,6 +13,10 @@ export function ThemeToggle() {
 
   const handleChange = React.useCallback(
     (checked: boolean) => {
+      document.documentElement.classList.add("theme-transition")
+      window.setTimeout(() => {
+        document.documentElement.classList.remove("theme-transition")
+      }, 250)
       setTheme(checked ? "dark" : "light")
     },
     [setTheme]

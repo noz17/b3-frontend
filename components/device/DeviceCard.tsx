@@ -94,7 +94,6 @@ export const DeviceCard = ({
           onAssign={onOpenAssign}
           onDelete={onOpenDelete}
           onViewLogs={onOpenLogs}
-          disabledActions={!isOnline}
         />
       </div>
 

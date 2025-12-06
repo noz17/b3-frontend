@@ -376,7 +376,7 @@ export default function DevicesPage() {
 
       <EditDeviceDialog
         device={editDevice}
-        canEditSerial={editDevice?.status === "offline"}
+        canEditSerial={false}
         onOpenChange={(open) => {
           if (!open) setEditDevice(null);
         }}

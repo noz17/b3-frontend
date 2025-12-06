@@ -99,7 +99,7 @@ export const DeviceGroupPanels = ({
               return (
                 <div
                   key={device.id}
-                  className="flex flex-wrap items-center gap-3 rounded-xl border px-3 py-2"
+                  className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-3 py-2"
                 >
                   {/* LEFT SIDE → NAME + SERIAL */}
                   <div className="mr-auto">
