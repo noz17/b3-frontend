@@ -43,7 +43,8 @@ type DeviceGroup = {
   id: string;
   name: string;
   description?: string;
-  devices: number;
+  devices?: number | Device[];
+  deviceCount?: number;
 };
 
 type ApiGroup = Record<string, any>; // missing from OpenAPI
@@ -121,7 +122,7 @@ export default function Page() {
   React.useEffect(() => {
     // Load Leaflet assets on the client
     if (typeof window === "undefined") return;
-    const ensureCss = () => {
+    const ensureLeafletCss = () => {
       const exists = document.getElementById("leaflet-css");
       if (exists) return;
       const link = document.createElement("link");
@@ -130,7 +131,8 @@ export default function Page() {
       link.href = "/vendor/leaflet/leaflet.css";
       document.head.appendChild(link);
     };
-    ensureCss();
+
+    ensureLeafletCss();
 
     const initMap = () => {
       if (!mapContainerRef.current || mapRef.current || !window.L) return;
@@ -179,6 +181,26 @@ export default function Page() {
       return;
     const L = window.L;
 
+    const onlineIcon = L.icon({
+      iconUrl: "/vendor/leaflet/images/marker-icon-green.png",
+      iconRetinaUrl: "/vendor/leaflet/images/marker-icon-green-2x.png",
+      shadowUrl: "/vendor/leaflet/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
+    const offlineIcon = L.icon({
+      iconUrl: "/vendor/leaflet/images/marker-icon-red.png",
+      iconRetinaUrl: "/vendor/leaflet/images/marker-icon-red-2x.png",
+      shadowUrl: "/vendor/leaflet/images/marker-shadow.png",
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41],
+    });
+
     // Clear existing markers
     markerLayerRef.current.clearLayers();
 
@@ -199,6 +221,7 @@ export default function Page() {
     validDevices.forEach((device) => {
       const marker = L.marker([device.latitude!, device.longitude!], {
         title: device.name,
+        icon: device.status === "online" ? onlineIcon : offlineIcon,
       });
 
       marker.bindTooltip(
@@ -252,7 +275,7 @@ export default function Page() {
           </div>
 
           {error ? (
-            <Card className="border-destructive/40">
+            <Card className="border-destructive/40 border-border">
               <CardHeader>
                 <CardTitle className="text-destructive">
                   Dashboard Loading Failed
@@ -298,65 +321,29 @@ export default function Page() {
               <CardTitle>Node Map</CardTitle>
               <CardDescription>All devices are connected</CardDescription>
             </CardHeader>
-            <CardContent className="relative">
-              <div
-                ref={mapContainerRef}
-                className="h-[360px] w-full rounded-lg border"
-                aria-label="Device map"
-              />
-              {!leafletReady ? (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-                  Loading ...
-                </div>
-              ) : null}
+          <CardContent className="relative">
+            <div
+              ref={mapContainerRef}
+              className="h-[360px] w-full rounded-lg border border-border"
+              aria-label="Device map"
+            />
+            {!leafletReady ? (
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+                Loading ...
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle>Devices</CardTitle>
+              <CardDescription>Latest device list</CardDescription>
+            </CardHeader>
+            <CardContent className="gap-4">
+              <DeviceTable devices={filteredDevices} loading={loading} />
             </CardContent>
           </Card>
-
-          <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-4">
-            <Card className="lg:col-span-2 xl:col-span-3">
-              <CardHeader className="pb-2">
-                <CardTitle>Latest Device</CardTitle>
-                <CardDescription>Top 8 Device from API</CardDescription>
-              </CardHeader>
-              <CardContent className="px-2">
-                <DeviceTable devices={latestDevices} loading={loading} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Group List</CardTitle>
-                <CardDescription>Endpoint /groups</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">
-                    Loading groups...
-                  </p>
-                ) : groups.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No Group yet.</p>
-                ) : (
-                  groups.map((group) => (
-                    <div key={group.id} className="rounded-lg border p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{group.name}</p>
-                          {group.description ? (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {group.description}
-                            </p>
-                          ) : null}
-                        </div>
-                        <Badge variant="secondary">
-                          {group.devices} devices
-                        </Badge>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
@@ -373,7 +360,7 @@ function StatBox({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg border border-border p-3">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="text-3xl font-semibold tabular-nums">
         {loading ? "…" : value}
@@ -403,9 +390,19 @@ function DeviceTable({
     );
   }
 
+  const renderCell = (text: string | null | undefined) => {
+    const value = text ?? "-";
+    const truncated = value.length > 25 ? `${value.slice(0, 25)}…` : value;
+    return (
+      <span title={value} className="truncate block max-w-[240px]">
+        {truncated}
+      </span>
+    );
+  };
+
   return (
-    <div className="rounded-lg border">
-      <Table>
+    <div className="rounded-lg border border-border">
+      <Table className="[&_th]:px-3 [&_td]:px-3">
         <TableHeader>
           <TableRow>
             <TableHead>Device</TableHead>
@@ -418,16 +415,18 @@ function DeviceTable({
         <TableBody>
           {devices.map((device) => (
             <TableRow key={device.id}>
-              <TableCell className="font-medium">{device.name}</TableCell>
+              <TableCell className="font-medium">
+                {renderCell(device.name)}
+              </TableCell>
               <TableCell className="font-mono text-xs">
-                {device.serial}
+                {renderCell(device.serial)}
               </TableCell>
               <TableCell>
                 <StatusBadge status={device.status} />
               </TableCell>
-              <TableCell>{device.location || "-"}</TableCell>
+              <TableCell>{renderCell(device.location)}</TableCell>
               <TableCell className="text-muted-foreground text-xs">
-                {device.lastSeen || "-"}
+                {renderCell(device.lastSeen ?? "-")}
               </TableCell>
             </TableRow>
           ))}
@@ -450,6 +449,8 @@ function StatusBadge({ status }: { status: Device["status"] }) {
 function mapDevice(device: ApiDevice): Device {
   const status = normalizeStatus(device.status);
   const serial = device.serialNumber || device.macAddress || device.id || "-";
+  const rawGroupId = device.groupId ?? device.group?.id;
+  const groupId = rawGroupId != null ? String(rawGroupId) : null;
   return {
     id: device.id || serial,
     name: device.name || serial,
@@ -457,18 +458,33 @@ function mapDevice(device: ApiDevice): Device {
     status,
     location: device.location || "-",
     lastSeen: device.lastSeenAt || null,
-    groupId: device.groupId || device.group?.id || null,
+    groupId,
     latitude: typeof device.latitude === "number" ? device.latitude : null,
     longitude: typeof device.longitude === "number" ? device.longitude : null,
   };
 }
 
 function mapGroup(group: ApiGroup): DeviceGroup {
+  const idValue = group.id ?? (group as any).groupId ?? crypto.randomUUID();
+  const id = String(idValue);
+  const deviceCount = Array.isArray(group.devices)
+    ? group.devices.length
+    : typeof (group as any).deviceCount === "number"
+      ? (group as any).deviceCount
+      : typeof (group as any).device_count === "number"
+        ? (group as any).device_count
+        : typeof group.devices === "number"
+          ? group.devices
+          : typeof (group as any).devicesCount === "number"
+            ? (group as any).devicesCount
+            : 0;
+
   return {
-    id: group.id || crypto.randomUUID(),
+    id,
     name: group.name || "Unnamed Group",
     description: group.description,
-    devices: Array.isArray(group.devices) ? group.devices.length : 0,
+    devices: group.devices,
+    deviceCount,
   };
 }
 

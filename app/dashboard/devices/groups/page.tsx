@@ -259,7 +259,7 @@ export default function GroupsPage() {
 
             {/* Error */}
             {error ? (
-              <Card className="border-destructive/40">
+              <Card className="border-destructive/40 border-border">
                 <CardHeader>
                   <CardTitle className="text-destructive">Error</CardTitle>
                   <CardDescription>{error}</CardDescription>
@@ -330,7 +330,7 @@ function GroupTable({
   if (!groups.length) {
     return (
       <Card>
-        <CardHeader className="border-b">
+        <CardHeader className="border-b border-border">
           <CardTitle>Group Table</CardTitle>
           <CardDescription>Data from GET /groups</CardDescription>
         </CardHeader>
@@ -343,7 +343,7 @@ function GroupTable({
 
   return (
     <Card>
-      <CardHeader className="border-b">
+      <CardHeader className="border-b border-border">
         <CardTitle>Group Table</CardTitle>
         <CardDescription>Data from GET /groups</CardDescription>
       </CardHeader>
@@ -620,7 +620,7 @@ function StatTile({
   helper?: string;
 }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="rounded-lg border border-border p-3">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="text-3xl font-semibold tabular-nums">
         {loading ? "…" : value}

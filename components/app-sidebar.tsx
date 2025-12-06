@@ -174,7 +174,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       tooltip={item.title}
                       isActive={isActive(item)}
                     >
-                      <a href={item.url}>
+                      <a
+                        href={item.url}
+                        className={
+                          isActive(item)
+                            ? "bg-[--sidebar-primary] text-[--sidebar-primary-foreground] hover:bg-[--sidebar-primary]"
+                            : ""
+                        }
+                      >
                         <item.icon />
                         <span>{item.title}</span>
                       </a>
