@@ -13,8 +13,9 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Eye, EyeOff, GalleryVerticalEnd } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
+import Image from "next/image"
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const router = useRouter()
@@ -47,8 +48,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       <form onSubmit={handleSubmit}>
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <div className="flex size-8 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-6" />
+            <div className="flex h-10 items-center justify-center rounded-md">
+              <Image
+                src="/logo.png"
+                alt="Nono IoT logo"
+                width={411}
+                height={86}
+                priority
+                unoptimized
+                className="h-9 w-auto"
+              />
             </div>
             <h1 className="text-xl font-bold">Welcome</h1>
             <FieldDescription>

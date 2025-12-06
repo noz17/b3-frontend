@@ -268,20 +268,18 @@ export const parseApiError = (error: unknown): string => {
   if (error instanceof ApiError) {
     const body = error.body as Record<string, unknown> | undefined;
     const message = body?.message ?? body?.error;
-    const statusLabel = [error.status, error.statusText]
-      .filter((part) => part && String(part).trim())
-      .join(" ");
-    const target = error.url
-      ? `${error.request?.method ?? "GET"} ${error.url}`
-      : "";
+    const normalized =
+      typeof message === "string" && message.trim().toLowerCase().includes("not found")
+        ? "Username atau password salah"
+        : message;
 
-    const resolvedMessage = Array.isArray(message)
-      ? message.join(", ")
-      : typeof message === "string" && message.trim()
-        ? message
-        : error.message || "Request failed";
+    const resolvedMessage = Array.isArray(normalized)
+      ? normalized.join(", ")
+      : typeof normalized === "string" && normalized.trim()
+        ? normalized
+        : "Request failed";
 
-    return [resolvedMessage, statusLabel, target].filter(Boolean).join(" — ");
+    return resolvedMessage;
   }
 
   if (

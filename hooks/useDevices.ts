@@ -116,6 +116,10 @@ export const useDevices = () => {
   const handleSocketLog = useCallback(
     (deviceId: string, log: DeviceLog) => {
       appendLogs(deviceId, log);
+      const relay = extractRelayState(log.payload);
+      if (relay === "ON" || relay === "OFF") {
+        setPowerMap((prev) => ({ ...prev, [deviceId]: relay === "ON" }));
+      }
     },
     [appendLogs]
   );
@@ -142,12 +146,22 @@ export const useDevices = () => {
       const mapped = rawDevices.map(mapApiDeviceToDevice);
       setDevices(mapped);
 
+      // hydrate power state from storage
+      let storedPower: Record<string, boolean> = {};
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("device-power-map");
+          if (raw) storedPower = JSON.parse(raw);
+        } catch (e) {
+          console.warn("Failed to read power map from storage", e);
+        }
+      }
+
       // Initial power & connection
-      setPowerMap(
-        Object.fromEntries(
-          mapped.map((d: Device) => [d.id, d.status === "online"])
-        )
+      const initialPower = Object.fromEntries(
+        mapped.map((d: Device) => [d.id, d.status === "online"])
       );
+      setPowerMap({ ...initialPower, ...storedPower });
 
       setConnectionMap(
         Object.fromEntries(
@@ -205,7 +219,8 @@ export const useDevices = () => {
           );
           type RelayState = "ON" | "OFF" | null;
 
-          const relay = mappedLogs
+          const sortedLogs = mergeAndSortLogs(mappedLogs);
+          const relay = sortedLogs
             .map((l: DeviceLog) => extractRelayState(l.payload) as RelayState)
             .find(
               (v: RelayState): v is "ON" | "OFF" => v === "ON" || v === "OFF"
@@ -220,7 +235,7 @@ export const useDevices = () => {
 
           return {
             deviceId: key,
-            logs: mergeAndSortLogs(mappedLogs).slice(-50),
+            logs: sortedLogs.slice(-50),
           };
         })
       );
@@ -380,6 +395,16 @@ export const useDevices = () => {
     loadDevices();
     loadGroups();
   }, [loadDevices, loadGroups]);
+
+  // persist powerMap to storage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem("device-power-map", JSON.stringify(powerMap));
+    } catch (e) {
+      console.warn("Failed to persist power map", e);
+    }
+  }, [powerMap]);
 
   // ---------------------------------
   // PUBLIC API RETURN

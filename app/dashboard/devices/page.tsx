@@ -295,7 +295,7 @@ export default function DevicesPage() {
             />
 
             {error ? (
-              <Card className="border-destructive/30">
+              <Card className="border-destructive/30 border-border">
                 <CardHeader>
                   <CardTitle className="text-destructive">
                     Gagal memuat data
@@ -376,7 +376,7 @@ export default function DevicesPage() {
 
       <EditDeviceDialog
         device={editDevice}
-        canEditSerial={editDevice?.status === "offline"}
+        canEditSerial={false}
         onOpenChange={(open) => {
           if (!open) setEditDevice(null);
         }}

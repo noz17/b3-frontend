@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Icon } from "@tabler/icons-react";
 import {
-  IconInnerShadowTop,
   IconLayoutDashboard,
   IconListDetails,
   IconUsers,
@@ -133,10 +134,20 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Nono IoT</span>
-              </a>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Nono IoT logo"
+                  width={411}
+                  height={86}
+                  priority
+                  unoptimized
+                  className="h-8 w-auto"
+                />
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -163,7 +174,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       tooltip={item.title}
                       isActive={isActive(item)}
                     >
-                      <a href={item.url}>
+                      <a
+                        href={item.url}
+                        className={
+                          isActive(item)
+                            ? "bg-[--sidebar-primary] text-[--sidebar-primary-foreground] hover:bg-[--sidebar-primary]"
+                            : ""
+                        }
+                      >
                         <item.icon />
                         <span>{item.title}</span>
                       </a>

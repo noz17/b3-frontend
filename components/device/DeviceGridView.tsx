@@ -79,37 +79,29 @@ export const DeviceGridView = ({
             </div>
 
           {/* GRID */}
-          <div
-            className="
-              grid 
-              gap-4 
-              sm:grid-cols-2 
-              md:grid-cols-3 
-              lg:grid-cols-4 
-              xl:grid-cols-5 
-              2xl:grid-cols-6
-            "
-          >
-            {group.devices.map((device) => {
-              const isOnline =
-                connectionMap[device.serial || device.id] === "online";
+          <div className="w-full max-w-[1600px] mx-auto px-4">
+            <div className="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+              {group.devices.map((device) => {
+                const isOnline =
+                  connectionMap[device.serial || device.id] === "online";
 
-              const isPowerOn = powerMap[device.id] ?? false;
+                const isPowerOn = powerMap[device.id] ?? false;
 
-              return (
-                <DeviceCard
-                  key={device.id}
-                  device={device}
-                  isOnline={isOnline}
-                  isPowerOn={isPowerOn}
-                  onTogglePower={onTogglePower}
-                  onOpenDelete={onDelete}
-                  onOpenLogs={onViewLogs}
-                  onOpenEdit={onEdit}
-                  onOpenAssign={onAssign}
-                />
-              );
-            })}
+                return (
+                  <DeviceCard
+                    key={device.id}
+                    device={device}
+                    isOnline={isOnline}
+                    isPowerOn={isPowerOn}
+                    onTogglePower={onTogglePower}
+                    onOpenDelete={onDelete}
+                    onOpenLogs={onViewLogs}
+                    onOpenEdit={onEdit}
+                    onOpenAssign={onAssign}
+                  />
+                );
+              })}
+            </div>
           </div>
           </div>
         );
