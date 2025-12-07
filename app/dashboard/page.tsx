@@ -390,6 +390,21 @@ function DeviceTable({
     );
   }
 
+  const formatTimestamp = (value?: string | null) => {
+    if (!value) return "-";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+
+    const pad = (num: number) => num.toString().padStart(2, "0");
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds()
+    )}`;
+  };
+
   const renderCell = (text: string | null | undefined) => {
     const value = text ?? "-";
     const truncated = value.length > 25 ? `${value.slice(0, 25)}…` : value;
@@ -426,7 +441,7 @@ function DeviceTable({
               </TableCell>
               <TableCell>{renderCell(device.location)}</TableCell>
               <TableCell className="text-muted-foreground text-xs">
-                {renderCell(device.lastSeen ?? "-")}
+                {renderCell(formatTimestamp(device.lastSeen))}
               </TableCell>
             </TableRow>
           ))}
