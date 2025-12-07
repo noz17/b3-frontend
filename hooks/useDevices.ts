@@ -34,6 +34,7 @@ type CreateDeviceInput = CreateDeviceDto & {
 type UpdateDeviceInput = UpdateDeviceDto & {
   id: string;
   groupId?: string;
+  serial?: string;
 };
 export const useDevices = () => {
   // ---------------------------
@@ -283,7 +284,12 @@ export const useDevices = () => {
 
   const updateDevice = async (payload: UpdateDeviceInput) => {
     try {
-      await DevicesService.devicesControllerUpdate(payload.id, {
+      const identifier = payload.id?.trim();
+      if (!identifier) {
+        throw new Error("Device id is missing; cannot update device");
+      }
+
+      await DevicesService.devicesControllerUpdate(identifier, {
         serialNumber: payload.serialNumber,
         name: payload.name,
         description: payload.description,

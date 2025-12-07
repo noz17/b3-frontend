@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { IconTerminal2 } from "@tabler/icons-react";  
+import { IconTerminal2 } from "@tabler/icons-react";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 import { DeviceActionMenu } from "./DeviceActionMenu";
 import { truncateId } from "@/utils/device";
@@ -37,6 +38,16 @@ export const DeviceCard = ({
   onOpenDelete,
   onOpenAssign,
 }: Props) => {
+  const handleCopy = async (label: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast(`${label} copied to clipboard`);
+    } catch (err) {
+      toast.error("Failed to copy");
+      console.error("Clipboard copy failed", err);
+    }
+  };
+
   const renderInfo = (
     label: string,
     value?: string | null,
@@ -44,11 +55,23 @@ export const DeviceCard = ({
   ) => {
     const raw = value ?? "-";
     const shown = display ?? raw;
+    const clickableValue = raw.toString();
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <p className="text-xs text-muted-foreground truncate cursor-help">
+          <p
+            className="text-xs text-muted-foreground truncate cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => handleCopy(label, clickableValue)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCopy(label, clickableValue);
+              }
+            }}
+          >
             <span className="font-medium text-foreground">{label}:</span>{" "}
             {shown}
           </p>
@@ -102,7 +125,7 @@ export const DeviceCard = ({
         {renderInfo("Serial", device.serial || "-")}
         {renderInfo("Location", device.location || "-")}
         {renderInfo("Last seen", device.lastSeen || "-")}
-        {renderInfo("GPS", gps || "No data")}
+        {renderInfo("Desc", device.description || "-")}
       </div>
 
       <div className="flex items-center justify-between">
